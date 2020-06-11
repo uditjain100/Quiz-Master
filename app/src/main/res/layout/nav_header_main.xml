@@ -3,13 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/Aqua"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/answer_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24sp" />
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="50dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_done"
@@ -17,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/answer_sheet"
         android:layout_margin="16dp"
-        android:backgroundTint="@color/Yellow"
+        android:backgroundTint="@color/DarkOrange"
         android:text="Done"
         android:textAllCaps="true"
         android:textColor="@color/Black"

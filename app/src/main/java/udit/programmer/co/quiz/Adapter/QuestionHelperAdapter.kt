@@ -1,5 +1,6 @@
 package udit.programmer.co.quiz.Adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +28,7 @@ class QuestionHelperAdapter(var answerSheetList: MutableList<CurrentQuestion>) :
             onHelperRecyclerViewClickListener?.onClick(position)
         }
         holder.itemView.text_question_num.text = (position + 1).toString()
+        holder.itemView.text_question_num.setTextColor(Color.BLACK)
         if (answerSheetList[position].type == Common.ANSWER_TYPE.RIGHT_ANSWER) {
             holder.itemView.layout_wrapper.setBackgroundResource(R.drawable.grid_right_answer_layout)
         } else if (answerSheetList[position].type == Common.ANSWER_TYPE.WRONG_ANSWER) {

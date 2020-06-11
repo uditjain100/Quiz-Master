@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/Chocolate"
+        android:backgroundTint="@color/BlanchedAlmond"
         android:padding="5dp">
 
         <RelativeLayout
@@ -59,6 +60,29 @@
         </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:background="@color/Red"
+        app:cardCornerRadius="40dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/txt_wrong_answer"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/Magenta"
+            android:text="Wrong Answers Count"
+            android:textAlignment="center"
+            android:textColor="@color/Black"
+            android:textSize="25dp"
+            android:textStyle="bold" />
+
+    </com.google.android.material.card.MaterialCardView>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -70,7 +94,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/DodgerBlue"
-            app:tabMode="scrollable" />
+            app:tabMode="scrollable"
+            app:tabRippleColor="@color/colorAccent"
+            app:tabTextColor="@color/Black" />
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/view_pager"

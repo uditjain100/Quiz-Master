@@ -6,16 +6,16 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
+import android.os.Handler
 import android.view.Gravity
+import android.view.Menu
 import android.view.View
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -45,7 +45,6 @@ class QuestionActivity : AppCompatActivity() {
     lateinit var adapter: GridAnswerAdapter
     lateinit var fragmentAdapter: MyFragmentAdapter
     private lateinit var appBarConfiguration: AppBarConfiguration
-    lateinit var txt_wrong_answer: TextView
     lateinit var helper_adapter: QuestionHelperAdapter
     internal var goToQuestion: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -62,50 +61,48 @@ class QuestionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_question)
+        setSupportActionBar(c_toolbar)
 
-        c_toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.refresh -> {
-                    Toast.makeText(this, "Refresh Clicked", Toast.LENGTH_LONG).show()
-                    true
-                }
-                else -> false
-            }
-        }
+        c_toolbar.title = "QUESTIONS"
 
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(goToQuestion, IntentFilter(Common.KEY_GO_TO_QUESTION))
 
         val nav_controller = findNavController(R.id.nav_host_fragment)
         appBarConfiguration = AppBarConfiguration(setOf(R.id.nav_home), drawer_layout)
-//        setupActionBarWithNavController(nav_controller, appBarConfiguration)
+        setupActionBarWithNavController(nav_controller, appBarConfiguration)
         nav_view.setupWithNavController(nav_controller)
 
         generateQuestions()
 
-//        answer_sheet.setHasFixedSize(true)
-//        answer_sheet.layoutManager = GridLayoutManager(this, 3)
-//        answer_sheet.addItemDecoration(SpacesItemDecoration(2))
+        Handler().postDelayed(object : Runnable {
+            override fun run() {
 
-//        btn_done.setOnClickListener {
-//            if (!isAnswerModeView) {
-//                MaterialStyledDialog.Builder(this)
-//                    .setTitle("Finish")
-//                    .setDescription("Do you really want to finish?")
-//                    .setIcon(R.drawable.ic_baseline_mood_24)
-//                    .setNegativeText("No")
-//                    .onNegative {
-//                        finish()
-//                    }.setPositiveText("Yes")
-//                    .onPositive {
-//                        finishQuiz()
-//                        drawer_layout.closeDrawer(Gravity.LEFT)
-//                    }.show()
-//            } else {
-//                finishQuiz()
-//            }
-//        }
+                answer_sheet.setHasFixedSize(true)
+                answer_sheet.layoutManager = GridLayoutManager(this@QuestionActivity, 3)
+                answer_sheet.addItemDecoration(SpacesItemDecoration(2))
 
+                btn_done.setOnClickListener {
+                    if (!isAnswerModeView) {
+                        MaterialStyledDialog.Builder(this@QuestionActivity)
+                            .setTitle("Finish")
+                            .setDescription("Do you really want to finish?")
+                            .setIcon(R.drawable.ic_baseline_mood_24)
+                            .setNegativeText("No")
+                            .onNegative {
+                                finish()
+                            }.setPositiveText("Yes")
+                            .onPositive {
+                                finishQuiz()
+                                drawer_layout.closeDrawer(Gravity.LEFT)
+                            }.show()
+                    } else {
+                        finishQuiz()
+                    }
+                }
+
+            }
+        }, 1000)
 
     }
 
@@ -218,8 +215,8 @@ class QuestionActivity : AppCompatActivity() {
                 grid_answer_rv_layout.setHasFixedSize(true)
                 if (Common.questionList.size > 0) {
                     grid_answer_rv_layout.layoutManager = GridLayoutManager(
-                        this, 6
-                        //if (Common.questionList.size > 5) Common.questionList.size / 2 else Common.questionList.size
+                        this,
+                        if (Common.questionList.size > 5) Common.questionList.size / 2 else Common.questionList.size
                     )
                 }
                 adapter = GridAnswerAdapter(Common.answer_sheet_list)
@@ -324,4 +321,15 @@ class QuestionActivity : AppCompatActivity() {
             }
         })
     }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.quiz_menu, menu)
+        return true
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
 }
