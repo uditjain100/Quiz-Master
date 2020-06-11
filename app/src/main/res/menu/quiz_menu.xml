@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_wrong_answer"
+        android:actionLayout="@layout/rectangle_text_view"
+        android:title="Wrong"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/done"
+        android:icon="@drawable/ic_baseline_done_outline_24"
+        android:title="Done"
+        app:showAsAction="always" />
+
+</menu>
