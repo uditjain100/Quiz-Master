@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.findNavController
@@ -21,6 +22,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_question.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -33,6 +35,7 @@ import udit.programmer.co.quiz.Common.SpacesItemDecoration
 import udit.programmer.co.quiz.Interface.OnHelperRecyclerViewClickListener
 import udit.programmer.co.quiz.Models.CurrentQuestion
 import udit.programmer.co.quiz.Room.AppDatabase
+import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
 
 class QuestionActivity : AppCompatActivity() {
@@ -57,6 +60,7 @@ class QuestionActivity : AppCompatActivity() {
 
     }
     var isAnswerModeView = false
+    val CODE_GET_RESULT = 9999
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -173,6 +177,13 @@ class QuestionActivity : AppCompatActivity() {
             questionFragment.disableAnswer()
         }
 
+        val intent = Intent(this, ResultActivity::class.java)
+        Common.timer = Common.TOTAL_TIME - time_play
+        Common.no_answer_count =
+            Common.questionList.size - (Common.right_answer_count + Common.wrong_answer_count)
+        Common.data_question = StringBuilder(Gson().toJson(Common.answer_sheet_list))
+
+        startActivityForResult(intent, CODE_GET_RESULT)
     }
 
     private fun countCorrectAnswer() {
@@ -320,6 +331,15 @@ class QuestionActivity : AppCompatActivity() {
                 answer_sheet.adapter = helper_adapter
             }
         })
+    }
+
+    override fun onBackPressed() {
+        if(drawer_layout.isDrawerOpen(GravityCompat.START)){
+            drawer_layout.closeDrawer(GravityCompat.START)
+        }else{
+            this.finish()
+            super.onBackPressed()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

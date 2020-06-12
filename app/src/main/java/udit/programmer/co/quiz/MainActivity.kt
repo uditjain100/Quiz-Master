@@ -27,6 +27,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        c_toolbar.setOnClickListener {
+            startActivity(Intent(this, ResultActivity::class.java))
+        }
+
         db.todoDao().getCategories().observe(this, Observer {
             category_list.addAll(it)
         })
