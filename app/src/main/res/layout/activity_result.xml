@@ -10,14 +10,14 @@
     tools:deviceIds="wear">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/toolbar_layout"
+        android:id="@+id/result_toolbar_layout"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:background="@color/Green"
         app:liftOnScroll="true">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/c_toolbar"
+            android:id="@+id/result_toolbar"
             style="@style/MaterialAlertDialog.MaterialComponents.Title.Icon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -88,6 +88,7 @@
                     app:strokeWidth="2dp">
 
                     <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/txt_result"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -132,6 +133,7 @@
         android:weightSum="4">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_all_answer"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_margin="2dp"

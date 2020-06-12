@@ -10,11 +10,14 @@ object Common {
 
     val TOTAL_TIME = 20 * 60 * 1000
     var answer_sheet_list: MutableList<CurrentQuestion> = ArrayList()
+    var answer_sheet_list_filtered: MutableList<CurrentQuestion> = ArrayList()
     var questionList: MutableList<Question> = ArrayList()
     var selectedCategory: Category? = null
     var fragmentList: MutableList<QuestionFragment> = ArrayList()
     var selected_values: MutableList<String> = ArrayList()
+
     val KEY_GO_TO_QUESTION: String? = "position_go_to"
+    val KEY_BACK_FROM_RESULT: String? = "back_from_result"
 
     var timer = 0
     var right_answer_count = 0

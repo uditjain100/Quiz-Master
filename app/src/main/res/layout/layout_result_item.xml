@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:id="@+id/btn_question"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:backgroundTint="@color/DodgerBlue"
+    android:drawableBottom="@drawable/ic_baseline_error_outline_24"
+    android:fontFamily="monospace"
+    android:text="Question 1"
+    android:textAlignment="center"
+    android:textAllCaps="false"
+    android:textColor="@color/Black"
+    android:textSize="20dp"
+    android:textStyle="bold"
+    app:cornerRadius="20dp"
+    app:strokeColor="@color/DarkBlue"
+    app:strokeWidth="2dp">
+
+</com.google.android.material.button.MaterialButton>
