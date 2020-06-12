@@ -7,9 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
+import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog
 import kotlinx.android.synthetic.main.activity_question.*
 import kotlinx.android.synthetic.main.activity_result.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -122,7 +125,51 @@ class ResultActivity : AppCompatActivity() {
             addItemDecoration(SpacesItemDecoration(4))
             adapter = this.adapter
         }
-
-
     }
+
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this)
+            .unregisterReceiver(backtoQuestion)
+        super.onDestroy()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.result_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.again -> doQuizAgain()
+            R.id.answer -> viewAnswer()
+            android.R.id.home -> {
+                startActivity(
+                    Intent(applicationContext, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                )
+            }
+        }
+        return true
+    }
+
+    private fun viewAnswer() {
+        setResult(Activity.RESULT_OK, Intent().putExtra("action", "viewAnswer"))
+        finish()
+    }
+
+    private fun doQuizAgain() {
+        MaterialStyledDialog.Builder(this)
+            .setTitle("Do Quiz Again ?")
+            .setDescription("Do you really want to delete this?")
+            .setIcon(R.drawable.ic_baseline_mood_24)
+            .setNegativeText("No")
+            .onNegative {
+                finish()
+            }.setPositiveText("Yes")
+            .onPositive {
+                setResult(Activity.RESULT_OK, Intent().putExtra("action", "doQuizAgain"))
+                finish()
+            }.show()
+    }
+
 }

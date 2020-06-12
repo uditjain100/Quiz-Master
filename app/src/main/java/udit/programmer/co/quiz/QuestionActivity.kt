@@ -1,5 +1,6 @@
 package udit.programmer.co.quiz
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -7,6 +8,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.Menu
 import android.view.View
@@ -24,6 +26,7 @@ import androidx.viewpager.widget.ViewPager
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_question.*
+import kotlinx.android.synthetic.main.activity_result.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
@@ -138,7 +141,6 @@ class QuestionActivity : AppCompatActivity() {
 
     private fun countTimer() {
         countDownTimer = object : CountDownTimer(Common.TOTAL_TIME.toLong(), 1000) {
-
             override fun onFinish() {
                 finishQuiz()
             }
@@ -153,8 +155,7 @@ class QuestionActivity : AppCompatActivity() {
                 )
                 time_play -= 1000
             }
-
-        }
+        }.start()
     }
 
     private fun finishQuiz() {
@@ -334,9 +335,9 @@ class QuestionActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if(drawer_layout.isDrawerOpen(GravityCompat.START)){
+        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
             drawer_layout.closeDrawer(GravityCompat.START)
-        }else{
+        } else {
             this.finish()
             super.onBackPressed()
         }
@@ -352,4 +353,62 @@ class QuestionActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CODE_GET_RESULT && resultCode == Activity.RESULT_OK) {
+            val action = data!!.getStringExtra("action")
+            if (action == null) {
+                if (TextUtils.isEmpty(action)) {
+                    val questionIndex = data.getIntExtra(Common.KEY_BACK_FROM_RESULT, -1)
+                    view_pager.currentItem = questionIndex
+
+                    isAnswerModeView = true
+                    countDownTimer!!.cancel()
+
+                    txt_wrong_answer.visibility = View.GONE
+                    txt_right_answer.visibility = View.GONE
+                    txt_timer.visibility = View.GONE
+                }
+            } else {
+                if (action.equals("viewAnswer")) {
+
+                    view_pager.currentItem = 0
+
+                    isAnswerModeView = true
+                    countDownTimer!!.cancel()
+
+                    txt_wrong_answer.visibility = View.GONE
+                    txt_right_answer.visibility = View.GONE
+                    txt_timer.visibility = View.GONE
+
+                    for (i in Common.fragmentList.indices) {
+                        Common.fragmentList[i].showCorrectAnswer()
+                        Common.fragmentList[i].disableAnswer()
+                    }
+
+                } else if (action.equals("doQuizAgain")) {
+
+                    view_pager.currentItem = 0
+
+                    isAnswerModeView = false
+
+                    txt_wrong_answer.visibility = View.GONE
+                    txt_right_answer.visibility = View.GONE
+                    txt_timer.visibility = View.GONE
+
+                    for (i in Common.fragmentList.indices)
+                        Common.fragmentList[i].resetQuestion()
+
+                    for(i in Common.answer_sheet_list.indices)
+                        Common.answer_sheet_list[i].type = Common.ANSWER_TYPE.NO_ANSWER
+
+                    adapter.notifyDataSetChanged()
+                    helper_adapter.notifyDataSetChanged()
+
+                    countTimer()
+                }
+            }
+        }
+
+    }
 }
