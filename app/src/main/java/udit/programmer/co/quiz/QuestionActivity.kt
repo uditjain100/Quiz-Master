@@ -18,16 +18,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog
-import com.google.android.material.internal.NavigationMenuItemView
 import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_question.*
@@ -101,7 +97,6 @@ class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
 
         Handler().postDelayed(object : Runnable {
             override fun run() {
-
                 answer_sheet.setHasFixedSize(true)
                 answer_sheet.layoutManager = GridLayoutManager(this@QuestionActivity, 3)
                 answer_sheet.addItemDecoration(SpacesItemDecoration(2))
@@ -321,6 +316,7 @@ class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                             val question_state = questionFragment.selectedAnswer()
                             Common.answer_sheet_list[position] = question_state
                             adapter.notifyDataSetChanged()
+                            helper_adapter.notifyDataSetChanged()
 
                             countCorrectAnswer()
 
@@ -338,8 +334,8 @@ class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
 
                 right_answer.text =
                     "${Common.right_answer_count} / ${Common.questionList.size}"
-                helper_adapter = QuestionHelperAdapter(Common.answer_sheet_list)
-                helper_adapter.onHelperRecyclerViewClickListener =
+                this.helper_adapter = QuestionHelperAdapter(Common.answer_sheet_list)
+                this.helper_adapter.onHelperRecyclerViewClickListener =
                     object : OnHelperRecyclerViewClickListener {
                         override fun onClick(position: Int) {
                             LocalBroadcastManager.getInstance(this@QuestionActivity)
@@ -351,7 +347,7 @@ class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
                                 )
                         }
                     }
-                answer_sheet.adapter = helper_adapter
+                answer_sheet.adapter = this.helper_adapter
             }
         })
     }
@@ -366,6 +362,27 @@ class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.done_tick -> {
+                if (!isAnswerModeView) {
+                    MaterialStyledDialog.Builder(this@QuestionActivity)
+                        .setTitle("Finish")
+                        .setDescription("Do you really want to finish?")
+                        .setIcon(R.drawable.ic_baseline_mood_24)
+                        .setNegativeText("No")
+                        .onNegative {
+                            finish()
+                        }.setPositiveText("Yes")
+                        .onPositive {
+                            finishQuiz()
+                            drawer_layout.closeDrawer(Gravity.LEFT)
+                        }.show()
+                } else {
+                    finishQuiz()
+                }
+            }
+            else -> return true
+        }
         return super.onOptionsItemSelected(item)
     }
 

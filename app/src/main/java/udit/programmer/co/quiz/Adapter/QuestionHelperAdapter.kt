@@ -24,17 +24,9 @@ class QuestionHelperAdapter(var answerSheetList: MutableList<CurrentQuestion>) :
     override fun getItemCount(): Int = answerSheetList.size
 
     override fun onBindViewHolder(holder: QuestionHelperViewHolder, position: Int) {
+        holder.bind(answerSheetList[position])
         holder.itemView.setOnClickListener {
             onHelperRecyclerViewClickListener?.onClick(position)
-        }
-        holder.itemView.text_question_num.text = (position + 1).toString()
-        holder.itemView.text_question_num.setTextColor(Color.BLACK)
-        if (answerSheetList[position].type == Common.ANSWER_TYPE.RIGHT_ANSWER) {
-            holder.itemView.layout_wrapper.setBackgroundResource(R.drawable.grid_right_answer_layout)
-        } else if (answerSheetList[position].type == Common.ANSWER_TYPE.WRONG_ANSWER) {
-            holder.itemView.layout_wrapper.setBackgroundResource(R.drawable.grid_wrong_answer_layout)
-        } else {
-            holder.itemView.layout_wrapper.setBackgroundResource(R.drawable.grid_item_no_answer)
         }
     }
 
