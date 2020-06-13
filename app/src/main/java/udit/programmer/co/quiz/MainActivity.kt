@@ -90,4 +90,5 @@ class MainActivity : AppCompatActivity() {
                 Paper.book().write(Common.KEY_ONLINE_MODE, ckb_online_mode.isChecked)
             }.show()
     }
+
 }
