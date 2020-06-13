@@ -32,9 +32,7 @@ class QuestionFragment : Fragment(), SelectAnswer {
     ): View? {
         val itemView = inflater.inflate(R.layout.fragment_question, container, false)
         questionIndex = requireArguments().getInt("index", -1)
-        Log.d(KEY, "Yo Man00 ${questionIndex}")
         question = Common.questionList[questionIndex]
-        Log.d(KEY, "Yo Man01 ${Common.questionList[questionIndex].QuestionText}")
         if (question != null) {
             if (question!!.IsImageQuestion!!) {
                 Handler().postDelayed(object : Runnable {
@@ -150,20 +148,20 @@ class QuestionFragment : Fragment(), SelectAnswer {
         val correctAnswer =
             question!!.CorrectAnswer!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }
         for (answer in correctAnswer) {
-            when {
-                answer == "A" -> {
+            when (answer) {
+                "A" -> {
                     ckb_A.setTypeface(null, Typeface.BOLD)
                     ckb_A.setTextColor(Color.RED)
                 }
-                answer == "B" -> {
+                "B" -> {
                     ckb_B.setTypeface(null, Typeface.BOLD)
                     ckb_B.setTextColor(Color.RED)
                 }
-                answer == "C" -> {
+                "C" -> {
                     ckb_C.setTypeface(null, Typeface.BOLD)
                     ckb_C.setTextColor(Color.RED)
                 }
-                answer == "D " -> {
+                "D " -> {
                     ckb_D.setTypeface(null, Typeface.BOLD)
                     ckb_D.setTextColor(Color.RED)
                 }

@@ -3,9 +3,13 @@ package udit.programmer.co.quiz
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.c_toolbar
+import kotlinx.android.synthetic.main.activity_question.*
+import kotlinx.android.synthetic.main.app_bar_main.*
 import udit.programmer.co.quiz.Adapter.CategoryAdapter
 import udit.programmer.co.quiz.Common.Common
 import udit.programmer.co.quiz.Common.SpacesItemDecoration

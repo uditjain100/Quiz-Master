@@ -11,11 +11,14 @@ import android.os.Handler
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -24,6 +27,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog
+import com.google.android.material.internal.NavigationMenuItemView
+import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_question.*
 import kotlinx.android.synthetic.main.activity_result.*
@@ -38,10 +43,11 @@ import udit.programmer.co.quiz.Common.SpacesItemDecoration
 import udit.programmer.co.quiz.Interface.OnHelperRecyclerViewClickListener
 import udit.programmer.co.quiz.Models.CurrentQuestion
 import udit.programmer.co.quiz.Room.AppDatabase
+import udit.programmer.co.quiz.ui.home.HomeFragment
 import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
 
-class QuestionActivity : AppCompatActivity() {
+class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     val db by lazy {
         AppDatabase.getDataBase(this)
@@ -68,17 +74,28 @@ class QuestionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_question)
-        setSupportActionBar(c_toolbar)
+        setSupportActionBar(c_question_toolbar)
 
-        c_toolbar.title = "QUESTIONS"
+        c_question_toolbar.title = "QUESTIONS"
 
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(goToQuestion, IntentFilter(Common.KEY_GO_TO_QUESTION))
 
-        val nav_controller = findNavController(R.id.nav_host_fragment)
-        appBarConfiguration = AppBarConfiguration(setOf(R.id.nav_home), drawer_layout)
-        setupActionBarWithNavController(nav_controller, appBarConfiguration)
-        nav_view.setupWithNavController(nav_controller)
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawer_layout,
+            c_question_toolbar,
+            R.string.Open,
+            R.string.Close
+        )
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
+
+//        val nav_controller = findNavController(R.id.nav_host_fragment)
+//        appBarConfiguration = AppBarConfiguration(setOf(R.id.nav_home), drawer_layout)
+//        setupActionBarWithNavController(nav_controller, appBarConfiguration)
+//        nav_view.setupWithNavController(nav_controller)
+        nav_view.setNavigationItemSelectedListener(this)
 
         generateQuestions()
 
@@ -193,9 +210,9 @@ class QuestionActivity : AppCompatActivity() {
         Common.wrong_answer_count = 0
 
         for (item in Common.answer_sheet_list) {
-            if (Common.answer_sheet_list == Common.ANSWER_TYPE.RIGHT_ANSWER) {
+            if (item.type == Common.ANSWER_TYPE.RIGHT_ANSWER) {
                 Common.right_answer_count++
-            } else if (Common.answer_sheet_list == Common.ANSWER_TYPE.WRONG_ANSWER) {
+            } else if (item.type == Common.ANSWER_TYPE.WRONG_ANSWER) {
                 Common.wrong_answer_count++
             }
         }
@@ -211,7 +228,7 @@ class QuestionActivity : AppCompatActivity() {
                 MaterialStyledDialog.Builder(this)
                     .setTitle("Ooops...")
                     .setDescription("We don't have any questions in this ${Common.selectedCategory!!.Name} category")
-                    .setIcon(R.drawable.ic_launcher_foreground)
+                    .setIcon(R.drawable.ic_baseline_emoji_objects_24)
                     .setPositiveText("OK")
                     .onPositive {
                         finish()
@@ -225,14 +242,15 @@ class QuestionActivity : AppCompatActivity() {
                 generateItems()
 
                 grid_answer_rv_layout.setHasFixedSize(true)
+                grid_answer_rv_layout.addItemDecoration(SpacesItemDecoration(2))
                 if (Common.questionList.size > 0) {
                     grid_answer_rv_layout.layoutManager = GridLayoutManager(
                         this,
                         if (Common.questionList.size > 5) Common.questionList.size / 2 else Common.questionList.size
                     )
                 }
-                adapter = GridAnswerAdapter(Common.answer_sheet_list)
-                grid_answer_rv_layout.adapter = adapter
+                this.adapter = GridAnswerAdapter(Common.answer_sheet_list)
+                grid_answer_rv_layout.adapter = this.adapter
 
                 generateFragmentList()
 
@@ -282,14 +300,18 @@ class QuestionActivity : AppCompatActivity() {
                         var questionFragment: QuestionFragment
                         var position = 0
                         if (p0 > 0) {
-                            if (isScrollDirectionRight) {
-                                questionFragment = Common.fragmentList[p0 - 1]
-                                position = p0 - 1
-                            } else if (isScrollDirectionLeft) {
-                                questionFragment = Common.fragmentList[p0 + 1]
-                                position = p0 + 1
-                            } else {
-                                questionFragment = Common.fragmentList[p0]
+                            when {
+                                isScrollDirectionRight -> {
+                                    questionFragment = Common.fragmentList[p0 - 1]
+                                    position = p0 - 1
+                                }
+                                isScrollDirectionLeft -> {
+                                    questionFragment = Common.fragmentList[p0 + 1]
+                                    position = p0 + 1
+                                }
+                                else -> {
+                                    questionFragment = Common.fragmentList[p0]
+                                }
                             }
                         } else {
                             questionFragment = Common.fragmentList[0]
@@ -341,6 +363,10 @@ class QuestionActivity : AppCompatActivity() {
             this.finish()
             super.onBackPressed()
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -399,7 +425,7 @@ class QuestionActivity : AppCompatActivity() {
                     for (i in Common.fragmentList.indices)
                         Common.fragmentList[i].resetQuestion()
 
-                    for(i in Common.answer_sheet_list.indices)
+                    for (i in Common.answer_sheet_list.indices)
                         Common.answer_sheet_list[i].type = Common.ANSWER_TYPE.NO_ANSWER
 
                     adapter.notifyDataSetChanged()
@@ -411,4 +437,15 @@ class QuestionActivity : AppCompatActivity() {
         }
 
     }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_home_02 -> {
+                startActivity(Intent(this, HomeFragment::class.java))
+            }
+            else -> return true
+        }
+        return true
+    }
+
 }

@@ -7,14 +7,14 @@
     tools:context=".QuestionActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/toolbar_layout"
+        android:id="@+id/question_toolbar_layout"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:background="@color/Green"
         app:liftOnScroll="true">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/c_toolbar"
+            android:id="@+id/c_question_toolbar"
             style="@style/MaterialAlertDialog.MaterialComponents.Title.Icon"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -65,15 +65,15 @@ class ResultActivity : AppCompatActivity() {
         btn_wrong_answer.text = "${Common.wrong_answer_count}"
         btn_no_answer.text = "${Common.no_answer_count}"
 
-        val percent = (Common.right_answer_count * 100) / Common.questionList.size
-        when {
-            percent > 80 -> txt_result.text = "EXCELLENT"
-            percent > 70 -> txt_result.text = "GOOD"
-            percent > 60 -> txt_result.text = "FAIR"
-            percent > 50 -> txt_result.text = "POOR"
-            percent > 40 -> txt_result.text = "BAD"
-            else -> txt_result.text = "FAIL"
-        }
+//        val percent = (Common.right_answer_count * 100) / Common.questionList.size
+//        when {
+//            percent > 80 -> txt_result.text = "EXCELLENT"
+//            percent > 70 -> txt_result.text = "GOOD"
+//            percent > 60 -> txt_result.text = "FAIR"
+//            percent > 50 -> txt_result.text = "POOR"
+//            percent > 40 -> txt_result.text = "BAD"
+//            else -> txt_result.text = "FAIL"
+//        }
 
         btn_all_answer.setOnClickListener {
             adapter = ResultAdapter(Common.answer_sheet_list)

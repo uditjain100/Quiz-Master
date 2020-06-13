@@ -11,15 +11,19 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/Chocolate"
-        android:backgroundTint="@color/BlanchedAlmond"
-        android:padding="5dp">
+        android:layout_margin="10dp"
+        android:backgroundTint="@color/SkyBlue"
+        android:padding="5dp"
+        app:cardCornerRadius="25dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:strokeColor="@color/DarkBlue"
+        app:strokeWidth="2dp">
 
         <RelativeLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="15dp"
-            android:background="@color/Chocolate"
+            android:background="@color/SkyBlue"
             android:padding="5dp"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -38,7 +42,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_toRightOf="@id/grid_answer_rv_layout"
                 android:text="0/30"
-                android:textColor="@color/White"
+                android:textColor="@color/Black"
                 android:textSize="24dp"
                 android:textStyle="bold"
                 android:visibility="gone" />
@@ -52,7 +56,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="8dp"
                 android:text="00:30"
-                android:textColor="@color/White"
+                android:textColor="@color/Black"
                 android:textSize="24dp"
                 android:textStyle="bold"
                 android:visibility="gone" />
