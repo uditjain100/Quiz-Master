@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager.widget.ViewPager
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_question.*
 import kotlinx.android.synthetic.main.activity_result.*
@@ -36,8 +37,11 @@ import udit.programmer.co.quiz.Adapter.MyFragmentAdapter
 import udit.programmer.co.quiz.Adapter.QuestionHelperAdapter
 import udit.programmer.co.quiz.Common.Common
 import udit.programmer.co.quiz.Common.SpacesItemDecoration
+import udit.programmer.co.quiz.Firebase.OnlineAppDatabase
+import udit.programmer.co.quiz.Interface.MyCallback
 import udit.programmer.co.quiz.Interface.OnHelperRecyclerViewClickListener
 import udit.programmer.co.quiz.Models.CurrentQuestion
+import udit.programmer.co.quiz.Models.Question
 import udit.programmer.co.quiz.Room.AppDatabase
 import udit.programmer.co.quiz.ui.home.HomeFragment
 import java.lang.StringBuilder
@@ -216,140 +220,176 @@ class QuestionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSel
     }
 
     private fun generateQuestions() {
-
-        db.todoDao().getQuestionsByCategoryId(Common.selectedCategory!!.Id).observe(this, Observer {
-            Common.questionList.addAll(it)
-            if (Common.questionList.size == 0) {
-                MaterialStyledDialog.Builder(this)
-                    .setTitle("Ooops...")
-                    .setDescription("We don't have any questions in this ${Common.selectedCategory!!.Name} category")
-                    .setIcon(R.drawable.ic_baseline_emoji_objects_24)
-                    .setPositiveText("OK")
-                    .onPositive {
-                        finish()
-                    }.show()
-            } else if (Common.questionList.size > 0) {
-                txt_timer.visibility = View.VISIBLE
-                right_answer.visibility = View.VISIBLE
-
-                countTimer()
-
-                generateItems()
-
-                grid_answer_rv_layout.setHasFixedSize(true)
-                grid_answer_rv_layout.addItemDecoration(SpacesItemDecoration(2))
-                if (Common.questionList.size > 0) {
-                    grid_answer_rv_layout.layoutManager = GridLayoutManager(
-                        this,
-                        if (Common.questionList.size > 5) Common.questionList.size / 2 else Common.questionList.size
-                    )
-                }
-                this.adapter = GridAnswerAdapter(Common.answer_sheet_list)
-                grid_answer_rv_layout.adapter = this.adapter
-
-                generateFragmentList()
-
-                fragmentAdapter =
-                    MyFragmentAdapter(supportFragmentManager, Common.fragmentList)
-                view_pager.offscreenPageLimit = Common.questionList.size
-                view_pager.adapter = fragmentAdapter
-
-                sliding_tabs.setupWithViewPager(view_pager)
-
-                view_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-
-                    val SCROLLING_RIGHT = 0
-                    val SCROLLING_LEFT = 1
-                    val SCROLLING_UBDETERMINED = 2
-
-                    var currentScrollDirection = SCROLLING_UBDETERMINED
-
-                    private val isScrollDirectionUndetermined: Boolean
-                        get() = currentScrollDirection == SCROLLING_UBDETERMINED
-                    private val isScrollDirectionRight: Boolean
-                        get() = currentScrollDirection == SCROLLING_RIGHT
-                    private val isScrollDirectionLeft: Boolean
-                        get() = currentScrollDirection == SCROLLING_LEFT
-
-                    private fun setScrollingDirection(positionOffset: Float) {
-                        if (1 - positionOffset >= 0.5)
-                            this.currentScrollDirection = SCROLLING_RIGHT
-                        else if (1 - positionOffset <= 0.5)
-                            this.currentScrollDirection = SCROLLING_LEFT
-                    }
-
-                    override fun onPageScrollStateChanged(state: Int) {
-                        if (state == ViewPager.SCROLL_STATE_IDLE)
-                            this.currentScrollDirection = SCROLLING_UBDETERMINED
-                    }
-
-                    override fun onPageScrolled(
-                        position: Int,
-                        positionOffset: Float,
-                        positionOffsetPixels: Int
-                    ) {
-                        if (isScrollDirectionUndetermined) setScrollingDirection(positionOffset)
-                    }
-
-                    override fun onPageSelected(p0: Int) {
-                        var questionFragment: QuestionFragment
-                        var position = 0
-                        if (p0 > 0) {
-                            when {
-                                isScrollDirectionRight -> {
-                                    questionFragment = Common.fragmentList[p0 - 1]
-                                    position = p0 - 1
-                                }
-                                isScrollDirectionLeft -> {
-                                    questionFragment = Common.fragmentList[p0 + 1]
-                                    position = p0 + 1
-                                }
-                                else -> {
-                                    questionFragment = Common.fragmentList[p0]
-                                }
-                            }
-                        } else {
-                            questionFragment = Common.fragmentList[0]
-                            position = 0
-                        }
-                        if (Common.answer_sheet_list[position].type == Common.ANSWER_TYPE.NO_ANSWER) {
-                            val question_state = questionFragment.selectedAnswer()
-                            Common.answer_sheet_list[position] = question_state
-                            adapter.notifyDataSetChanged()
-                            helper_adapter.notifyDataSetChanged()
-
-                            countCorrectAnswer()
-
-                            right_answer.text =
-                                "${Common.right_answer_count} / ${Common.questionList.size}"
-                            txt_wrong_answer.text = "${Common.wrong_answer_count}"
-
-                            if (question_state.type != Common.ANSWER_TYPE.NO_ANSWER) {
-                                questionFragment.showCorrectAnswer()
-                                questionFragment.disableAnswer()
-                            }
-                        }
+        if (!Common.isOnline) {
+            db.todoDao().getQuestionsByCategoryId(Common.selectedCategory!!.Id)
+                .observe(this, Observer {
+                    Common.questionList.addAll(it)
+                    if (Common.questionList.size == 0) {
+                        MaterialStyledDialog.Builder(this)
+                            .setTitle("Ooops...")
+                            .setDescription("We don't have any questions in this ${Common.selectedCategory!!.Name} category")
+                            .setIcon(R.drawable.ic_baseline_emoji_objects_24)
+                            .setPositiveText("OK")
+                            .onPositive {
+                                finish()
+                            }.show()
+                    } else {
+                        setUpQuestion()
                     }
                 })
+        } else {
+            OnlineAppDatabase.getDataBase(this, FirebaseDatabase.getInstance())
+                .readData(
+                    object : MyCallback {
+                        override fun setQuestionsList(questionList: MutableList<Question>) {
+                            Common.questionList.clear()
+                            Common.questionList = questionList as MutableList<Question>
 
-                right_answer.text =
-                    "${Common.right_answer_count} / ${Common.questionList.size}"
-                this.helper_adapter = QuestionHelperAdapter(Common.answer_sheet_list)
-                this.helper_adapter.onHelperRecyclerViewClickListener =
-                    object : OnHelperRecyclerViewClickListener {
-                        override fun onClick(position: Int) {
-                            LocalBroadcastManager.getInstance(this@QuestionActivity)
-                                .sendBroadcast(
-                                    Intent(Common.KEY_GO_TO_QUESTION).putExtra(
-                                        Common.KEY_GO_TO_QUESTION,
-                                        position
-                                    )
-                                )
+                            if (Common.questionList.size == 0) {
+                                MaterialStyledDialog.Builder(this@QuestionActivity)
+                                    .setTitle("Ooops...")
+                                    .setDescription("We don't have any questions in this ${Common.selectedCategory!!.Name} category")
+                                    .setIcon(R.drawable.ic_baseline_emoji_objects_24)
+                                    .setPositiveText("OK")
+                                    .onPositive {
+                                        finish()
+                                    }.show()
+                            } else {
+                                setUpQuestion()
+                            }
+
+                        }
+                    }, Common.selectedCategory!!.Name!!
+                        .replace(" ", "")
+                        .replace("/", "_")
+                )
+        }
+    }
+
+    private fun setUpQuestion() {
+        if (Common.questionList.size > 0) {
+            txt_timer.visibility = View.VISIBLE
+            right_answer.visibility = View.VISIBLE
+
+            countTimer()
+
+            generateItems()
+
+            grid_answer_rv_layout.setHasFixedSize(true)
+            grid_answer_rv_layout.addItemDecoration(SpacesItemDecoration(2))
+            if (Common.questionList.size > 0) {
+                grid_answer_rv_layout.layoutManager = GridLayoutManager(
+                    this,
+                    if (Common.questionList.size > 5) Common.questionList.size / 2 else Common.questionList.size
+                )
+            }
+            this.adapter = GridAnswerAdapter(Common.answer_sheet_list)
+            grid_answer_rv_layout.adapter = this.adapter
+
+            generateFragmentList()
+
+            fragmentAdapter =
+                MyFragmentAdapter(supportFragmentManager, Common.fragmentList)
+            view_pager.offscreenPageLimit = Common.questionList.size
+            view_pager.adapter = fragmentAdapter
+
+            sliding_tabs.setupWithViewPager(view_pager)
+
+            view_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+
+                val SCROLLING_RIGHT = 0
+                val SCROLLING_LEFT = 1
+                val SCROLLING_UBDETERMINED = 2
+
+                var currentScrollDirection = SCROLLING_UBDETERMINED
+
+                private val isScrollDirectionUndetermined: Boolean
+                    get() = currentScrollDirection == SCROLLING_UBDETERMINED
+                private val isScrollDirectionRight: Boolean
+                    get() = currentScrollDirection == SCROLLING_RIGHT
+                private val isScrollDirectionLeft: Boolean
+                    get() = currentScrollDirection == SCROLLING_LEFT
+
+                private fun setScrollingDirection(positionOffset: Float) {
+                    if (1 - positionOffset >= 0.5)
+                        this.currentScrollDirection = SCROLLING_RIGHT
+                    else if (1 - positionOffset <= 0.5)
+                        this.currentScrollDirection = SCROLLING_LEFT
+                }
+
+                override fun onPageScrollStateChanged(state: Int) {
+                    if (state == ViewPager.SCROLL_STATE_IDLE)
+                        this.currentScrollDirection = SCROLLING_UBDETERMINED
+                }
+
+                override fun onPageScrolled(
+                    position: Int,
+                    positionOffset: Float,
+                    positionOffsetPixels: Int
+                ) {
+                    if (isScrollDirectionUndetermined) setScrollingDirection(
+                        positionOffset
+                    )
+                }
+
+                override fun onPageSelected(p0: Int) {
+                    var questionFragment: QuestionFragment
+                    var position = 0
+                    if (p0 > 0) {
+                        when {
+                            isScrollDirectionRight -> {
+                                questionFragment = Common.fragmentList[p0 - 1]
+                                position = p0 - 1
+                            }
+                            isScrollDirectionLeft -> {
+                                questionFragment = Common.fragmentList[p0 + 1]
+                                position = p0 + 1
+                            }
+                            else -> {
+                                questionFragment = Common.fragmentList[p0]
+                            }
+                        }
+                    } else {
+                        questionFragment = Common.fragmentList[0]
+                        position = 0
+                    }
+                    if (Common.answer_sheet_list[position].type == Common.ANSWER_TYPE.NO_ANSWER) {
+                        val question_state = questionFragment.selectedAnswer()
+                        Common.answer_sheet_list[position] = question_state
+                        adapter.notifyDataSetChanged()
+                        helper_adapter.notifyDataSetChanged()
+
+                        countCorrectAnswer()
+
+                        right_answer.text =
+                            "${Common.right_answer_count} / ${Common.questionList.size}"
+                        txt_wrong_answer.text = "${Common.wrong_answer_count}"
+
+                        if (question_state.type != Common.ANSWER_TYPE.NO_ANSWER) {
+                            questionFragment.showCorrectAnswer()
+                            questionFragment.disableAnswer()
                         }
                     }
-                answer_sheet.adapter = this.helper_adapter
-            }
-        })
+                }
+            })
+
+            right_answer.text =
+                "${Common.right_answer_count} / ${Common.questionList.size}"
+            this.helper_adapter = QuestionHelperAdapter(Common.answer_sheet_list)
+            this.helper_adapter.onHelperRecyclerViewClickListener =
+                object : OnHelperRecyclerViewClickListener {
+                    override fun onClick(position: Int) {
+                        LocalBroadcastManager.getInstance(this@QuestionActivity)
+                            .sendBroadcast(
+                                Intent(Common.KEY_GO_TO_QUESTION).putExtra(
+                                    Common.KEY_GO_TO_QUESTION,
+                                    position
+                                )
+                            )
+                    }
+                }
+            answer_sheet.adapter = this.helper_adapter
+        }
     }
 
     override fun onBackPressed() {

@@ -18,7 +18,9 @@ object Common {
 
     val KEY_GO_TO_QUESTION: String? = "position_go_to"
     val KEY_BACK_FROM_RESULT: String? = "back_from_result"
+    val KEY_ONLINE_MODE = "ONLINE_MODE"
 
+    var isOnline = false
     var timer = 0
     var right_answer_count = 0
     var wrong_answer_count = 0
